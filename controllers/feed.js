@@ -9,7 +9,10 @@ exports.getPosts = async (req, res, next) => {
     return res.status(200).json(posts);
   } catch (err) {
     console.log(err);
-    return res.status(501).json({ message: "Error 501", error: err });
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
   }
 };
 
@@ -17,9 +20,9 @@ exports.createPost = async (req, res, next) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
-    return res
-      .status(422)
-      .json({ message: "Invalid data", errors: errors.array() });
+    const error = new Error("Validation failed.");
+    error.statusCode = 422;
+    next(error);
   }
 
   const title = req.body.title;
@@ -29,7 +32,7 @@ exports.createPost = async (req, res, next) => {
     const post = new Post({
       title,
       content,
-      imageUrl: "",
+      imageUrl: "images/srpj11.jpg",
       creator: { name: "Erickson1" },
     });
 
@@ -41,8 +44,9 @@ exports.createPost = async (req, res, next) => {
     });
   } catch (err) {
     console.log(err);
-    return res
-      .status(501)
-      .json({ message: "Error 501:", errors: errors.array() });
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
   }
 };
