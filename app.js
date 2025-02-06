@@ -1,6 +1,7 @@
 const express = require("express");
 const path = require("path");
 const bodyParser = require("body-parser");
+const multer = require("multer");
 const mongoose = require("mongoose");
 
 const feedRoutes = require("./routes/feed");
@@ -9,7 +10,31 @@ require("dotenv").config();
 
 const app = express();
 
+const fileStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "images");
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now().toString() + "-" + file.originalname);
+  },
+});
+
+const fileFilter = (req, file, cb) => {
+  const mimetype = file.mimetype;
+
+  if (
+    mimetype === "image/jpg" ||
+    mimetype === "image/png" ||
+    mimetype === "image/jpeg"
+  ) {
+    cb(null, true);
+  } else {
+    cb(null, false);
+  }
+};
+
 app.use(bodyParser.json()); // application/json
+app.use(multer({ storage: fileStorage, fileFilter }).single("image"));
 app.use("/images", express.static(path.join(__dirname, "images")));
 
 app.use((req, res, next) => {
