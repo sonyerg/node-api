@@ -13,9 +13,20 @@ router.post(
   "/post",
   [
     body("title").isString().isLength({ min: 5, max: 100 }).trim(),
-    body("content").isLength({ min: 7, max: 200 }).trim(),
+    body("content").isLength({ min: 5, max: 200 }).trim(),
   ],
   feedController.createPost
 );
+
+router.put(
+  "/post/:postId",
+  [
+    body("title").isString().isLength({ min: 5, max: 100 }).trim(),
+    body("content").isLength({ min: 5, max: 200 }).trim(),
+  ],
+  feedController.updatePost
+);
+
+//TODO: delete product endpoint.
 
 module.exports = router;
