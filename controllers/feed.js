@@ -90,7 +90,7 @@ exports.updatePost = async (req, res, next) => {
   if (!errors.isEmpty()) {
     const error = new Error("Validation failed.");
     error.statusCode = 422;
-    next(error);
+    return next(error);
   }
 
   const updatedTitle = req.body.title;
@@ -131,7 +131,34 @@ exports.updatePost = async (req, res, next) => {
   }
 };
 
+exports.deletePost = async (req, res, next) => {
+  const postId = req.params.postId;
+
+  try {
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      const error = new Error("Post not found");
+      error.statusCode = 404;
+      return next(error);
+    }
+
+    clearImage(post.imageUrl);
+
+    await Post.findByIdAndDelete(postId);
+
+    return res.status(200).json({ message: "Post deleted successfully!" });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
+
 const clearImage = (filePath) => {
-  filePath = path.join(__dirname, "../images/" + filePath);
-  fs.unlink(filePath, (err) => console.log(err));
+  filePath = path.join(__dirname, '..', filePath);
+  fs.unlink(filePath, (err) => {
+    if (err) console.log(err);
+  });
 };
