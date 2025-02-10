@@ -6,10 +6,20 @@ const { validationResult } = require("express-validator");
 const Post = require("../models/post");
 
 exports.getPosts = async (req, res, next) => {
-  try {
-    const posts = await Post.find();
+  const currentPage = req.query.page || 1;
+  console.log(currentPage);
+  const perPage = 2;
+  let totalItems;
 
-    return res.status(200).json(posts);
+  try {
+    const count = await Post.find().countDocuments();
+
+    totalItems = count;
+    const posts = await Post.find()
+      .skip((currentPage - 1) * perPage)
+      .limit(perPage);
+
+    return res.status(200).json({ posts, totalItems });
   } catch (err) {
     console.log(err);
     if (!err.statusCode) {
@@ -157,7 +167,7 @@ exports.deletePost = async (req, res, next) => {
 };
 
 const clearImage = (filePath) => {
-  filePath = path.join(__dirname, '..', filePath);
+  filePath = path.join(__dirname, "..", filePath);
   fs.unlink(filePath, (err) => {
     if (err) console.log(err);
   });
