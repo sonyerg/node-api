@@ -17,8 +17,8 @@ const postSchema = new Schema(
       required: true,
     },
     creator: {
-      // TODO: make User model and connect that here.
-      type: Object,
+      type: Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
   },

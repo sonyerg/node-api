@@ -4,6 +4,7 @@ const path = require("path");
 const { validationResult } = require("express-validator");
 
 const Post = require("../models/post");
+const User = require("../models/user");
 
 exports.getPosts = async (req, res, next) => {
   const currentPage = req.query.page || 1;
@@ -70,18 +71,30 @@ exports.createPost = async (req, res, next) => {
   const imageUrl = req.file.path.replace("\\", "/");
 
   try {
+    const creator = await User.findById(req.userId);
+
+    if (!creator) {
+      const error = new Error("User not found in db.");
+      error.statusCode = 404;
+      return next(error);
+    }
+
     const post = new Post({
       title,
       content,
       imageUrl,
-      creator: { name: "Erickson1" },
+      creator: req.userId,
     });
 
     const result = await post.save();
+    
+    creator.posts.push(result._id);
+    await creator.save();
 
     return res.status(201).json({
       message: "Post created successfully",
       post: result,
+      creator: { _id: creator._id, name: creator.name },
     });
   } catch (err) {
     console.log(err);
