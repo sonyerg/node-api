@@ -62,6 +62,7 @@ exports.getPosts = async (req, res, next) => {
 
     totalItems = count;
     const posts = await Post.find()
+      .populate("creator")
       .skip((currentPage - 1) * perPage)
       .limit(perPage);
 
@@ -79,7 +80,7 @@ exports.getPost = async (req, res, next) => {
   const postId = req.params.postId;
 
   try {
-    const post = await Post.findById(postId);
+    const post = await Post.findById(postId).populate("creator");
 
     if (!post) {
       const error = new Error("Post unavailable");
