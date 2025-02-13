@@ -6,6 +6,52 @@ const { validationResult } = require("express-validator");
 const Post = require("../models/post");
 const User = require("../models/user");
 
+exports.getStatus = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.userId);
+
+    if (!user) {
+      const error = new Error("User not found");
+      error.statusCode = 404;
+      return next(error);
+    }
+
+    return res.status(200).json({ status: user.status });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
+
+exports.updateStatus = async (req, res, next) => {
+  const updatedStatus = req.body.status;
+
+  try {
+    const user = await User.findById(req.userId);
+
+    if (!user) {
+      const error = new Error("User not found");
+      error.statusCode = 404;
+      return next(error);
+    }
+
+    user.status = updatedStatus;
+
+    const result = await user.save();
+
+    return res
+      .status(201)
+      .json({ message: "Status Updated!", status: result.status });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
+
 exports.getPosts = async (req, res, next) => {
   const currentPage = req.query.page || 1;
   const perPage = 2;

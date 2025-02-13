@@ -10,6 +10,15 @@ router.get("/posts", isAuth, feedController.getPosts);
 
 router.get("/post/:postId", isAuth, feedController.getPost);
 
+router.get("/status", isAuth, feedController.getStatus);
+
+router.patch(
+  "/status",
+  isAuth,
+  [body("status").trim().not().isEmpty()],
+  feedController.updateStatus
+);
+
 router.post(
   "/post",
   [
