@@ -3,6 +3,7 @@ const path = require("path");
 
 const { validationResult } = require("express-validator");
 
+const io = require("../socket");
 const Post = require("../models/post");
 const User = require("../models/user");
 
@@ -138,6 +139,14 @@ exports.createPost = async (req, res, next) => {
     creator.posts.push(result._id);
     await creator.save();
 
+    io.getIO().emit("posts", {
+      action: "create",
+      post: {
+        ...result._doc,
+        creator: { _id: req.userId, name: creator.name },
+      },
+    });
+
     return res.status(201).json({
       message: "Post created successfully",
       post: result,
@@ -167,7 +176,7 @@ exports.updatePost = async (req, res, next) => {
   const image = req.file;
 
   try {
-    const post = await Post.findById(postId);
+    const post = await Post.findById(postId).populate("creator");
 
     let result;
 
@@ -177,7 +186,7 @@ exports.updatePost = async (req, res, next) => {
       return next(error);
     }
 
-    if (post.creator.toString() !== req.userId) {
+    if (post.creator._id.toString() !== req.userId) {
       const error = new Error("Not authorized");
       error.statusCode = 403;
       return next(error);
@@ -193,6 +202,11 @@ exports.updatePost = async (req, res, next) => {
     } else {
       result = await post.save();
     }
+
+    io.getIO().emit("posts", {
+      action: "update",
+      post: { ...result._doc, creator: { _id: req.userId, name: post.creator.name } }
+    });
 
     return res
       .status(200)

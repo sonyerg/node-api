@@ -64,8 +64,17 @@ app.use((error, req, res, next) => {
 mongoose
   .connect(process.env.MONGODB_URI)
   .then((result) => {
-    app.listen(8081);
+    const server = app.listen(8081);
     console.log("Connected to mongodb!");
+    const io = require("./socket").init(server);
+
+    io.on("connection", (socket) => {
+      console.log("Client connected:", socket.id);
+
+      socket.on("disconnect", () => {
+        console.log("Client disconnected:", socket.id);
+      });
+    });
   })
   .catch((err) => {
     console.log(err);
