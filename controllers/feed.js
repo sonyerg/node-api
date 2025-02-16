@@ -198,14 +198,16 @@ exports.updatePost = async (req, res, next) => {
     if (image) {
       clearImage(post.imageUrl);
       post.imageUrl = image.path.replace("\\", "/");
-      result = await post.save();
-    } else {
-      result = await post.save();
     }
+
+    result = await post.save();
 
     io.getIO().emit("posts", {
       action: "update",
-      post: { ...result._doc, creator: { _id: req.userId, name: post.creator.name } }
+      post: {
+        ...result._doc,
+        creator: { _id: req.userId, name: post.creator.name },
+      },
     });
 
     return res
