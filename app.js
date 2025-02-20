@@ -4,7 +4,7 @@ const bodyParser = require("body-parser");
 const multer = require("multer");
 const mongoose = require("mongoose");
 
-const { graphqlHTTP } = require('express-graphql');
+const { graphqlHTTP } = require("express-graphql");
 
 require("dotenv").config();
 
@@ -56,6 +56,7 @@ app.use(
   graphqlHTTP({
     schema: graphqlSchema,
     rootValue: graphqlResolver,
+    graphiql: true,
   })
 );
 
