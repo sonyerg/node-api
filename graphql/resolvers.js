@@ -140,4 +140,37 @@ module.exports = {
 
     return { token, userId: user._id.toString() };
   },
+
+  posts: async ({ page }, req) => {
+    if (!req.isAuth) {
+      const error = new Error("Unauthorized");
+      error.code = 401;
+      throw error;
+    }
+
+    if (!page) {
+      page = 1;
+    }
+
+    const perPage = 2;
+
+    const totalPosts = await Post.find().countDocuments();
+    const posts = await Post.find()
+      .populate("creator")
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * perPage)
+      .limit(perPage);
+
+    // For graphql to understand:
+    const mappedPosts = posts.map((p) => {
+      return {
+        ...p._doc,
+        _id: p._id.toString(),
+        createdAt: p.createdAt.toISOString(),
+        updatedAt: p.updatedAt.toISOString(),
+      };
+    });
+
+    return { posts: mappedPosts, totalPosts };
+  },
 };
