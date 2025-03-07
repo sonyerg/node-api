@@ -1,4 +1,5 @@
 const express = require("express");
+const fs = require("fs");
 const path = require("path");
 const bodyParser = require("body-parser");
 const multer = require("multer");
@@ -13,7 +14,6 @@ const app = express();
 const graphqlSchema = require("./graphql/schema");
 const graphqlResolver = require("./graphql/resolvers");
 const auth = require("./middleware/isAuth");
-const clearImage = require("./utils/clearImage");
 
 const fileStorage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -61,7 +61,7 @@ app.use(auth);
 
 app.put("/post-image", (req, res, next) => {
   if (!req.isAuth) {
-    throw new Error("Unautorized");
+    throw new Error("Unauthorized");
   }
 
   if (!req.file) {
@@ -70,6 +70,7 @@ app.put("/post-image", (req, res, next) => {
 
   if (req.body.oldPath) {
     clearImage(req.body.oldPath);
+    console.log(req.body.oldPath);
   }
 
   return res
@@ -115,3 +116,19 @@ mongoose
   .catch((err) => {
     console.log(err);
   });
+
+const clearImage = (filePath) => {
+  if (!filePath) {
+    return;
+  }
+
+  // Remove any leading slashes or 'images/' from the path
+  filePath = filePath.replace(/^\//, "").replace(/^images\//, "");
+  filePath = path.join(__dirname, "images", filePath);
+
+  fs.unlink(filePath, (err) => {
+    if (err && err.code !== "ENOENT") {
+      console.log("Error deleting image:", err);
+    }
+  });
+};
