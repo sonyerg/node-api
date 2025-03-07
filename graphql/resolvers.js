@@ -173,4 +173,24 @@ module.exports = {
 
     return { posts: mappedPosts, totalPosts };
   },
+
+  post: async ({ postId }, req) => {
+    if (!req.isAuth) {
+      throw new Error("Unauthorized");
+    }
+
+    const post = await Post.findById(postId).populate("creator");
+
+    if (!post) {
+      const error = new Error("Post unavailable");
+      error.code = 404;
+      throw error;
+    }
+
+    return {
+      ...post._doc,
+      _id: post._id.toString(),
+      createdAt: post.createdAt.toISOString(),
+    };
+  },
 };
