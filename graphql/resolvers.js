@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 
 const User = require("../models/user");
 const Post = require("../models/post");
+const { clearImage } = require("../utils/file");
 
 module.exports = {
   createUser: async ({ userInput }, req) => {
@@ -195,11 +196,11 @@ module.exports = {
   },
 
   editPost: async ({ postInput, postId }, req) => {
-    // if (!req.isAuth) {
-    //   const error = new Error("Unauthorized");
-    //   error.code = 401;
-    //   throw error;
-    // }
+    if (!req.isAuth) {
+      const error = new Error("Unauthorized");
+      error.code = 401;
+      throw error;
+    }
 
     const errors = [];
 
@@ -255,5 +256,41 @@ module.exports = {
       updatedAt: updatedPost.updatedAt.toISOString(),
       createdAt: updatedPost.createdAt.toISOString(),
     };
+  },
+
+  deletePost: async ({ postId }, req) => {
+    if (!req.isAuth) {
+      const error = new Error("Unauthorized");
+      error.code = 401;
+      throw error;
+    }
+
+    try {
+      const post = await Post.findById(postId);
+
+      if (!post) {
+        const error = new Error("Post unavailable");
+        error.code = 404;
+        throw error;
+      }
+
+      if (post.creator._id.toString() !== req.userId.toString()) {
+        const error = new Error("Unauthorized");
+        error.code = 403;
+        throw error;
+      }
+
+      clearImage(post.imageUrl);
+      await Post.findByIdAndDelete(postId);
+
+      const user = await User.findById(post.creator);
+      user.posts.pull(postId);
+      await user.save();
+
+      return true;
+    } catch (error) {
+      console.log("Error Delete Post", error);
+      return false;
+    }
   },
 };
