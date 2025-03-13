@@ -52,7 +52,7 @@ module.exports = buildSchema(`
         type RootMutation {
             createUser(userInput: UserInputData) : User!
             createPost(postInput: PostInputData) : Post!
-            editPost(postInput: PostInputData, postId: ID!) : Post!
+            editPost(postId: ID!, postInput: PostInputData) : Post!
             deletePost(postId: ID!): Boolean
             updateStatus(status: String!) : User!
         }    
