@@ -5,7 +5,10 @@ module.exports = (req, res, next) => {
 
   if (!authHeader) {
     req.isAuth = false;
-    return next();
+
+    const error = new Error("Unauthenticated.");
+    error.statusCode = 401;
+    throw error;
   }
 
   const token = authHeader.split(" ")[1];
@@ -15,7 +18,10 @@ module.exports = (req, res, next) => {
 
     if (!decodedToken) {
       req.isAuth = false;
-      return next();
+
+      const error = new Error("Unauthenticated.");
+      error.statusCode = 401;
+      throw error;
     }
 
     req.userId = decodedToken.userId;
@@ -23,7 +29,7 @@ module.exports = (req, res, next) => {
 
     return next();
   } catch (err) {
-    req.isAuth = false;
-    return next();
+    err.statusCode = 500;
+    throw err;
   }
 };
