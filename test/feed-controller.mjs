@@ -32,7 +32,7 @@ describe("Feed Controller - Status", () => {
     user
       .save()
       .then((user) => {
-        user._id = userId;
+        userId = user._id;
         done();
       })
       .catch((err) => done(err));
