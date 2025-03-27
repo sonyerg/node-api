@@ -6,7 +6,7 @@ import User from "../models/user.js";
 import AuthController from "../controllers/auth.js";
 
 describe("Auth controller - Login", () => {
-  it("should throw an error if accessing the database fails", (done) => {
+  it("should throw an error if it failed accessing the database", (done) => {
     sinon.stub(User, "findOne");
     User.findOne.throws();
 
