@@ -1,5 +1,7 @@
 const jwt = require("jsonwebtoken");
 
+// Prevents login query of client-side
+// Find a way to bypass this middleware if query is signup or login
 module.exports = (req, res, next) => {
   const authHeader = req.get("Authorization");
 
