@@ -138,21 +138,23 @@ exports.createPost = async (req, res, next) => {
     const result = await post.save();
 
     creator.posts.push(result._id);
-    await creator.save();
+    const savedCreator = await creator.save();
 
-    io.getIO().emit("posts", {
-      action: "create",
-      post: {
-        ...result._doc,
-        creator: { _id: req.userId, name: creator.name },
-      },
-    });
+    // io.getIO().emit("posts", {
+    //   action: "create",
+    //   post: {
+    //     ...result._doc,
+    //     creator: { _id: req.userId, name: creator.name },
+    //   },
+    // });
 
-    return res.status(201).json({
+    res.status(201).json({
       message: "Post created successfully",
       post: result,
       creator: { _id: creator._id, name: creator.name },
     });
+
+    return savedCreator;
   } catch (err) {
     console.log(err);
     if (!err.statusCode) {
@@ -251,7 +253,7 @@ exports.deletePost = async (req, res, next) => {
 
     io.getIO().emit("posts", {
       action: "delete",
-      post: postId
+      post: postId,
     });
 
     return res.status(200).json({ message: "Post deleted successfully!" });
